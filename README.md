@@ -2,7 +2,7 @@ PHP Router
 ==========
 Description
 -----------
-This is a simple PHP router that allows you to quickly create a website that is both dynamic and SEO friendly without a database. It also contains an easy way to create templated views.
+This is a simple PHP router that allows you to quickly create a website that is both dynamic and SEO friendly without a database. It also contains an easy way to create templated views. The templating and htaccess file are based off of [HTML5 Boilerplate](http://html5boilerplate.com/).
 
 Usage
 -----
