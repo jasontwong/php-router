@@ -99,41 +99,6 @@ function array_join($master)
     return array_intersect_key(call_user_func_array('array_merge', func_get_args()), $master);
 }
 // }}}
-// {{{ function available_filename($filename)
-/**
- * Get an available filename
- * If the filename is taken, it appends a _n before the extension, with n
- * being the index starting at 0.
- *
- * @param string $filename full path to the file to check
- * @return string filename including path
- */
-function available_filename($filename)
-{
-    list($name, $ext) = file_extension($filename);
-    $path = dirname($filename);
-    if (is_dir($path))
-    {
-        if (is_file($filename))
-        {
-            $i = 0;
-            while (TRUE)
-            {
-                $try = $path.'/'.$name.'-'.$i++.$ext;
-                if (!is_file($try))
-                {
-                    return $try;
-                }
-            }
-        }
-        else
-        {
-            return $filename;
-        }
-    }
-    return FALSE;
-}
-// }}}
 // {{{ function deka($default = NULL)
 /**
  * Works like eka() but with default value set as first parameter
@@ -153,63 +118,6 @@ function deka($default)
     return is_null($data) ? $default : $data;
 }
 // }}}
-// {{{ function dir_copy($src, $dest, $inclusive = TRUE, $chmod = 0777)
-/**
- * If the parameter $inclusive = TRUE, the folder specified in $src will be 
- * copied to the directory. So if source is /usr and dest is /home, you will
- * end up with /home/usr.
- *
- * @param string $src the directory you want to copy
- * @param string $dest where you want the $src copied
- * @param bool $inclusive if true, use the $src dir name
- * @param int $chmod octal mask for the $dest dir
- * @return bool
- */
-function dir_copy($src, $dest, $inclusive = TRUE, $chmod = 0777)
-{
-    if (is_dir($src))
-    {
-        $dest_folder = $inclusive ? $dest.'/'.basename($src) : $dest;
-        if (!is_dir($dest_folder))
-        {
-            if (mkdir($dest_folder, $chmod, TRUE))
-            {
-                chmod($dest_folder, $chmod);
-            }
-            else
-            {
-                return FALSE;
-            }
-        }
-        $files = scandir($src);
-        foreach ($files as $file)
-        {
-            if ($file !== '.' && $file !== '..')
-            {
-                $new_src = $src.'/'.$file;
-                $new_dest = $dest_folder.'/'.$file;
-                if (is_file($new_src))
-                {
-                    copy($new_src, $new_dest);
-                    chmod($new_dest, $chmod);
-                }
-                elseif (is_dir($new_src))
-                {
-                    if (!dir_copy($new_src, $new_dest, $inclusive, $chmod))
-                    {
-                        return FALSE;
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        return FALSE;
-    }
-    return TRUE;
-}
-// }}}
 // {{{ function eka($array)
 /**
  * Works like array_key_exists() but with array name first then multiple keys
@@ -222,59 +130,6 @@ function dir_copy($src, $dest, $inclusive = TRUE, $chmod = 0777)
 function eka($array)
 {
     return !is_null(call_user_func_array('array_drill', func_get_args()));
-}
-// }}}
-// {{{ function extension($string, $ext)
-/**
- * Adds or removes extension to string
- * Mainly used for filename handling
- *
- * @param string $string
- * @param string $ext extension to add or remove
- * @return string
- */
-function extension($string, $ext)
-{
-    $c = strlen($string) - strlen($ext);
-    return substr($string, $c) === $ext ? substr($string, 0, $c) : $string.$ext;
-}
-// }}}
-// {{{ function file_extension($filename)
-/**
- * Get the bare name and extension of a filename
- *
- * @param string $filename
- * @return array
- */
-function file_extension($filename)
-{
-    $filename = basename($filename);
-    $pos = strrpos($filename, '.');
-    return ($pos === FALSE || $pos === 0)
-        ? array($filename, $filename)
-        : array(substr($filename, 0, $pos), substr($filename, $pos));
-}
-// }}}
-// {{{ function file_mime_type($filename)
-/**
- * Get the mime_type of the file
- *
- * @param string $filename
- * @return string
- */
-function file_mime_type($filename)
-{
-    if (version_compare(PHP_VERSION, '5.3.0', '>='))
-    {
-        $finfo = finfo_open(FILEINFO_MIME_TYPE); // return mime type ala mimetype extension
-        $mime = finfo_file($finfo, $filename);
-        finfo_close($finfo);
-    }
-    else
-    {
-        $mime = mime_content_type($filename);
-    }
-    return $mime;
 }
 // }}}
 // {{{ function get_device_type($desktops = array(), $override = '')
@@ -382,48 +237,6 @@ function get_device_type($desktops = array(), $override = '')
     return $_SESSION[$category];
 }
 // }}}
-// {{{ function hex_to_rgb($color)
-/**
- * Converts hex color value to rgb color value
- *
- * @param string $color the hex value for the color
- * @return array
- */
-function hex_to_rgb($color)
-{
-    if ($color[0] == '#')
-    {
-        $color = substr($color, 1);
-    }
-
-    if (strlen($color) == 6)
-    {
-        list($r, $g, $b) = array(
-            $color[0].$color[1],
-            $color[2].$color[3],
-            $color[4].$color[5],
-        );
-    }
-    elseif (strlen($color) == 3)
-    {
-        list($r, $g, $b) = array(
-            $color[0].$color[0], 
-            $color[1].$color[1], 
-            $color[2].$color[2],
-        );
-    }
-    else
-    {
-        return false;
-    }
-
-    $r = hexdec($r); 
-    $g = hexdec($g); 
-    $b = hexdec($b);
-
-    return array($r, $g, $b);
-}
-// }}}
 // {{{ function hsc($string, $ent = ENT_QUOTES, $enc = 'UTF-8')
 /**
  * shortcut for htmlspecialchars()
@@ -490,94 +303,6 @@ function random_string($length = 10, $base = 62)
     return $o;
 }
 // }}}
-// {{{ function rgb_to_hex($r, $g = -1, $b = -1)
-/**
- * Converts rgb color value to hex color value
- *
- * @param int $r the read numeric value (1-255)
- * @param int $g the read numeric value (1-255)
- * @param int $b the read numeric value (1-255)
- * @return string
- */
-function rgb_to_hex($r, $g=-1, $b=-1)
-{
-    if (is_array($r) && sizeof($r) == 3)
-    {
-        list($r, $g, $b) = $r;
-    }
-
-    $r = intval($r);
-    $g = intval($g);
-    $b = intval($b);
-
-    $r = dechex($r<0?0:($r>255?255:$r));
-    $g = dechex($g<0?0:($g>255?255:$g));
-    $b = dechex($b<0?0:($b>255?255:$b));
-
-    $color = (strlen($r) < 2?'0':'').$r;
-    $color .= (strlen($g) < 2?'0':'').$g;
-    $color .= (strlen($b) < 2?'0':'').$b;
-    return '#'.$color;
-}
-// }}}
-// {{{ function rgb_to_yuv($r, $g=-1, $b=-1)
-/**
- * Converts rgb color value to yuv color value
- *
- * @param int $r the read numeric value (1-255)
- * @param int $g the read numeric value (1-255)
- * @param int $b the read numeric value (1-255)
- * @return array
- */
-function rgb_to_yuv($r, $g=-1, $b=-1)
-{
-    if (is_array($r) && sizeof($r) == 3)
-    {
-        list($r, $g, $b) = $r;
-    }
-
-    $y = 0.299*$r + 0.587*$g + 0.114*$b;
-    $u = 0.713*($r-$y);
-    $v = ($b-$y)*0.565;
-
-    return array($y, $u, $v);
-}
-// }}}
-// {{{ function rm_resource_dir($path, $rm_path = TRUE)
-/**
- * Recursively remove files and directories
- *
- * @param string $path file path
- * @param bool $rm_path remove path directory if TRUE
- * @return bool
- */
-function rm_resource_dir($path, $rm_path = TRUE)
-{
-    if (is_dir($path))
-    {
-        $files = scandir($path);
-        if ($files !== FALSE)
-        {
-            foreach ($files as $file)
-            {
-                if (!($file === '.' || $file === '..'))
-                {
-                    if (!rm_resource_dir(rtrim($path,'/').'/'.$file))
-                    {
-                        unlink($path.'/'.$file);
-                    }
-                }
-            }
-        }
-        if ($rm_path)
-        {
-            rmdir($path);
-        }
-        return TRUE;
-    }
-    return FALSE;
-}
-// }}}
 // {{{ function router_autoload($class)
 function router_autoload($class)
 {
@@ -586,43 +311,6 @@ function router_autoload($class)
     {
         include_once $file;
     }
-}
-// }}}
-// {{{ function size_readable($size, $max = null, $system = 'si', $retstring = '%01.2f %s')
-/**
- * Return human readable sizes
- *
- * @author      Aidan Lister <aidan@php.net>
- * @version     1.3.0
- * @link        http://aidanlister.com/2004/04/human-readable-file-sizes/
- * @param       int     $size        size in bytes
- * @param       string  $max         maximum unit
- * @param       string  $system      'si' for SI, 'bi' for binary prefixes
- * @param       string  $retstring   return string format
- */
-function size_readable($size, $max = null, $system = 'si', $retstring = '%01.2f %s')
-{
-    // Pick units
-    $systems['si']['prefix'] = array('B', 'K', 'MB', 'GB', 'TB', 'PB');
-    $systems['si']['size']   = 1000;
-    $systems['bi']['prefix'] = array('B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB');
-    $systems['bi']['size']   = 1024;
-    $sys = isset($systems[$system]) ? $systems[$system] : $systems['si'];
-
-    // Max unit to display
-    $depth = count($sys['prefix']) - 1;
-    if ($max && false !== $d = array_search($max, $sys['prefix'])) {
-        $depth = $d;
-    }
-
-    // Loop
-    $i = 0;
-    while ($size >= $sys['size'] && $i < $depth) {
-        $size /= $sys['size'];
-        $i++;
-    }
-
-    return sprintf($retstring, $size, $sys['prefix'][$i]);
 }
 // }}}
 // {{{ function slugify($name, $replacement = '-')
